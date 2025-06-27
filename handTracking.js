@@ -1,4 +1,4 @@
-// handTracking.js - Enhanced hand tracking with gesture recognition and 5-finger start
+// handTracking.js - Enhanced hand tracking with gesture recognition and confirmation indicator
 class HandTracker {
   constructor() {
     this.canvas = document.getElementById('handCanvas');
@@ -32,17 +32,9 @@ class HandTracker {
     this.confirmationProgress = 0;
     this.confirmationStartTime = 0;
     
-    // 5-finger start gesture properties
-    this.fiveFingerHoldTime = 0;
-    this.fiveFingerThreshold = 30; // Hold for 1.5 seconds (30 frames at ~20fps)
-    this.fiveFingerDetected = false;
-    this.fiveFingerConfirmationActive = false;
-    this.fiveFingerConfirmationProgress = 0;
-    
     this.onHandDetectedCallback = null;
     this.onFontSizeChangeCallback = null;
     this.onGestureDetectedCallback = null;
-    this.onFiveFingerStartCallback = null; // New callback for 5-finger start
   }
 
   // Set callback for when hands are detected (for inactivity timer)
@@ -58,11 +50,6 @@ class HandTracker {
   // Set callback for gesture detection (for quiz answers)
   setOnGestureDetectedCallback(callback) {
     this.onGestureDetectedCallback = callback;
-  }
-
-  // Set callback for 5-finger start gesture
-  setOnFiveFingerStartCallback(callback) {
-    this.onFiveFingerStartCallback = callback;
   }
 
   hideLoading() {
@@ -116,11 +103,6 @@ class HandTracker {
     
     console.log('Fingers up:', fingers, 'Count:', fingerCount); // Debug logging
     
-    // Check for 5-finger start gesture first
-    if (fingerCount === 5 && fingers.every(f => f === 1)) {
-      return { gesture: 'start', confidence: 0.9, fingerCount };
-    }
-    
     // Gesture mappings (more strict to avoid false positives):
     // 1 finger (only index) = Answer 1 (gesture 0)
     // 2 fingers (index + middle, no others) = Answer 2 (gesture 1)  
@@ -149,9 +131,9 @@ class HandTracker {
         gesture = 2;
         confidence = this.calculateGestureConfidence(landmarks, 'three', fingers);
       }
-    } else if (fingerCount === 4) {
-      if (fingers[1] === 1 && fingers[2] === 1 && fingers[3] === 1 && fingers[4] === 1 && fingers[0] === 0) {
-        // Four fingers up (no thumb)
+    } else if (fingerCount >= 4) {
+      if (fingers[1] === 1 && fingers[2] === 1 && fingers[3] === 1 && fingers[4] === 1) {
+        // Four or more fingers up (including thumb doesn't matter)
         gesture = 3;
         confidence = this.calculateGestureConfidence(landmarks, 'four', fingers);
       }
@@ -159,7 +141,7 @@ class HandTracker {
     
     console.log('Detected gesture:', gesture, 'Confidence:', confidence); // Debug logging
     
-    return { gesture, confidence, fingerCount };
+    return { gesture, confidence };
   }
 
   // Calculate confidence score for gesture stability
@@ -202,66 +184,15 @@ class HandTracker {
         if (fingers[1] === 1 && fingers[2] === 1 && fingers[3] === 1 && fingerCount === 3) confidence += 0.3;
         break;
       case 'four':
-        if (fingers[1] === 1 && fingers[2] === 1 && fingers[3] === 1 && fingers[4] === 1 && fingerCount === 4) confidence += 0.3;
+        if (fingers[1] === 1 && fingers[2] === 1 && fingers[3] === 1 && fingers[4] === 1 && fingerCount >= 4) confidence += 0.3;
         break;
     }
     
     return Math.min(confidence, 1.0);
   }
 
-  // Process 5-finger start gesture
-  processFiveFingerStart(gestureResult) {
-    if (gestureResult.gesture === 'start' && gestureResult.confidence > 0.7) {
-      this.fiveFingerHoldTime++;
-      
-      // Start confirmation animation
-      if (!this.fiveFingerConfirmationActive) {
-        this.fiveFingerConfirmationActive = true;
-      }
-      
-      // Update confirmation progress
-      this.fiveFingerConfirmationProgress = Math.min(this.fiveFingerHoldTime / this.fiveFingerThreshold, 1);
-      
-      // Gesture held long enough
-      if (this.fiveFingerHoldTime >= this.fiveFingerThreshold && !this.fiveFingerDetected) {
-        this.fiveFingerDetected = true;
-        this.fiveFingerConfirmationActive = false;
-        this.fiveFingerConfirmationProgress = 0;
-        
-        console.log('5-finger start gesture confirmed!');
-        
-        // Trigger start callback
-        if (this.onFiveFingerStartCallback) {
-          this.onFiveFingerStartCallback();
-        }
-        
-        // Visual feedback
-        this.showStartConfirmation();
-        
-        // Reset after a delay to prevent immediate re-triggering
-        setTimeout(() => {
-          this.fiveFingerDetected = false;
-          this.fiveFingerHoldTime = 0;
-        }, 2000);
-      }
-    } else {
-      // Reset if not showing 5 fingers
-      this.fiveFingerHoldTime = 0;
-      this.fiveFingerConfirmationActive = false;
-      this.fiveFingerConfirmationProgress = 0;
-    }
-  }
-
   // Process gesture detection with stability checking
   processGesture(gestureResult) {
-    // Handle 5-finger start gesture separately
-    this.processFiveFingerStart(gestureResult);
-    
-    // Skip regular gesture processing if showing 5 fingers
-    if (gestureResult.gesture === 'start') {
-      return;
-    }
-    
     if (this.cooldownCounter > 0) {
       this.cooldownCounter--;
       return;
@@ -321,32 +252,6 @@ class HandTracker {
     }
   }
 
-  // Show visual confirmation of 5-finger start
-  showStartConfirmation() {
-    this.ctx.save();
-    this.ctx.fillStyle = 'rgba(0, 255, 0, 0.9)';
-    this.ctx.font = 'bold 64px Arial';
-    this.ctx.textAlign = 'center';
-    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-    this.ctx.lineWidth = 3;
-    
-    // Draw text with outline
-    this.ctx.strokeText('QUIZ STARTEN!', this.canvas.width / 2, this.canvas.height / 2);
-    this.ctx.fillText('QUIZ STARTEN!', this.canvas.width / 2, this.canvas.height / 2);
-    
-    // Add smaller text below
-    this.ctx.font = 'bold 32px Arial';
-    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-    this.ctx.fillText('🖐️ Alle vingers gedetecteerd!', this.canvas.width / 2, this.canvas.height / 2 + 80);
-    
-    this.ctx.restore();
-    
-    // Clear the text after a delay
-    setTimeout(() => {
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    }, 2000);
-  }
-
   // Show visual confirmation of gesture detection
   showGestureConfirmation(gestureIndex) {
     // Create a visual indicator on the canvas
@@ -364,68 +269,6 @@ class HandTracker {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       }
     }, 1000);
-  }
-
-  // Draw 5-finger start confirmation indicator
-  drawFiveFingerConfirmation() {
-    if (!this.fiveFingerConfirmationActive || this.fiveFingerConfirmationProgress <= 0) {
-      return;
-    }
-    
-    // Position in center of screen
-    const centerX = this.canvas.width / 2;
-    const centerY = this.canvas.height / 2;
-    const radius = 60;
-    
-    // Calculate progress angle
-    const angle = this.fiveFingerConfirmationProgress * 2 * Math.PI;
-    
-    this.ctx.save();
-    
-    // Draw background circle
-    this.ctx.beginPath();
-    this.ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-    this.ctx.fill();
-    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-    this.ctx.lineWidth = 3;
-    this.ctx.stroke();
-    
-    // Draw progress arc (blue for start)
-    this.ctx.beginPath();
-    this.ctx.arc(centerX, centerY, radius - 6, -Math.PI / 2, -Math.PI / 2 + angle);
-    this.ctx.strokeStyle = 'rgba(0, 150, 255, 0.8)';
-    this.ctx.lineWidth = 8;
-    this.ctx.lineCap = 'round';
-    this.ctx.stroke();
-    
-    // Draw hand emoji in center
-    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-    this.ctx.font = 'bold 36px Arial';
-    this.ctx.textAlign = 'center';
-    this.ctx.textBaseline = 'middle';
-    this.ctx.fillText('🖐️', centerX, centerY);
-    
-    // Draw "STARTING" text below
-    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    this.ctx.font = 'bold 16px Arial';
-    this.ctx.fillText('QUIZ STARTEN', centerX, centerY + 80);
-    
-    // Add pulsing effect
-    const pulseScale = 1 + Math.sin(Date.now() * 0.01) * 0.1;
-    this.ctx.save();
-    this.ctx.translate(centerX, centerY);
-    this.ctx.scale(pulseScale, pulseScale);
-    this.ctx.translate(-centerX, -centerY);
-    
-    // Draw inner glow
-    this.ctx.beginPath();
-    this.ctx.arc(centerX, centerY, radius - 20, 0, 2 * Math.PI);
-    this.ctx.fillStyle = `rgba(0, 150, 255, ${0.2 * this.fiveFingerConfirmationProgress})`;
-    this.ctx.fill();
-    
-    this.ctx.restore();
-    this.ctx.restore();
   }
 
   // Draw confirmation indicator - repositioned to be centered and lower
@@ -560,14 +403,7 @@ class HandTracker {
       this.gestureDetected = false;
       this.confirmationActive = false;
       this.confirmationProgress = 0;
-      // Reset 5-finger tracking when no hands detected
-      this.fiveFingerHoldTime = 0;
-      this.fiveFingerConfirmationActive = false;
-      this.fiveFingerConfirmationProgress = 0;
     }
-    
-    // Draw 5-finger start confirmation indicator
-    this.drawFiveFingerConfirmation();
     
     // Draw confirmation indicator (repositioned and more transparent)
     this.drawConfirmationIndicator();
@@ -699,48 +535,12 @@ class HandTracker {
   }
 
   // Stop hand tracking
-  // Stop hand tracking
   stop() {
     if (this.cameraUtil) {
       this.cameraUtil.stop();
     }
-    if (this.hands) {
-      this.hands.close();
+    if (this.video.srcObject) {
+      this.video.srcObject.getTracks().forEach(track => track.stop());
     }
-    if (this.video && this.video.srcObject) {
-      const tracks = this.video.srcObject.getTracks();
-      tracks.forEach(track => track.stop());
-      this.video.srcObject = null;
-    }
-  }
-
-  // Clean up resources
-  destroy() {
-    this.stop();
-    
-    // Clear any remaining timers or intervals
-    this.gestureHistory = [];
-    this.gestureHoldTime = 0;
-    this.gestureDetected = false;
-    this.cooldownCounter = 0;
-    this.fiveFingerHoldTime = 0;
-    this.fiveFingerDetected = false;
-    
-    // Clear canvas
-    if (this.ctx) {
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    }
-  }
-
-  // Get gesture state for external monitoring
-  getGestureState() {
-    return {
-      currentGesture: this.currentGesture,
-      gestureConfidence: this.gestureConfidence,
-      confirmationActive: this.confirmationActive,
-      confirmationProgress: this.confirmationProgress,
-      cooldownActive: this.cooldownCounter > 0,
-      cooldownRemaining: this.cooldownCounter
-    };
   }
 }

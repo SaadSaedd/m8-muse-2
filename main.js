@@ -29,22 +29,48 @@ document.addEventListener('DOMContentLoaded', () => {
     wordAnimator.updateFontSize(fontSize);
   });
 
-  // Connect gesture detection to quiz answers
+  // Connect gesture detection to quiz answers and intro start
   handTracker.setOnGestureDetectedCallback((gestureIndex, confidence) => {
     console.log('Gesture detected:', gestureIndex, 'with confidence:', confidence);
     
-    // Find the answer button that corresponds to this gesture
-    const answerButtons = document.querySelectorAll('.quiz-section .answer');
+    // Debug: Log current state
+    console.log('Current state - introCompleted:', introCompleted);
     
-    if (answerButtons[gestureIndex]) {
-      // Simulate a click on the corresponding answer button
-      answerButtons[gestureIndex].click();
+    // If showing 5 fingers (open hand) during intro, start the quiz
+    // Try multiple possible indices for 5 fingers gesture
+    if (!introCompleted) {
+      // Check for various possible 5-finger gesture indices
+      const possibleFiveFingerIndices = [4, 5, 0]; // Common indices for 5 fingers
       
-      // Reset inactivity timer since user interacted
-      resetInactivityTimer();
+      if (possibleFiveFingerIndices.includes(gestureIndex)) {
+        console.log(`5 fingers detected (index ${gestureIndex}) during intro - starting quiz!`);
+        startMainApp();
+        return;
+      }
       
-      // Visual feedback that gesture was recognized
-      console.log(`Gesture ${gestureIndex + 1} triggered answer ${gestureIndex + 1}`);
+      // Also allow any high confidence gesture to start (fallback)
+      if (confidence > 0.8) {
+        console.log(`High confidence gesture (${gestureIndex}) detected during intro - starting quiz!`);
+        startMainApp();
+        return;
+      }
+    }
+    
+    // Only handle quiz answers if quiz is active
+    if (introCompleted) {
+      // Find the answer button that corresponds to this gesture
+      const answerButtons = document.querySelectorAll('.quiz-section .answer');
+      
+      if (answerButtons[gestureIndex]) {
+        // Simulate a click on the corresponding answer button
+        answerButtons[gestureIndex].click();
+        
+        // Reset inactivity timer since user interacted
+        resetInactivityTimer();
+        
+        // Visual feedback that gesture was recognized
+        console.log(`Gesture ${gestureIndex + 1} triggered answer ${gestureIndex + 1}`);
+      }
     }
   });
 
@@ -100,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Clean up quiz and animations
     wordAnimator.destroy();
-    handTracker.stop();
+    // Don't stop hand tracker here - keep it running
     
     // Reset video to beginning
     introVideo.currentTime = 0;
@@ -150,8 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Start the quiz
     quizManager.start();
     
-    // Start hand tracking
-    handTracker.startCamera().catch(console.error);
+    // Camera is already running, no need to start it again
     
     // Start inactivity timer
     resetInactivityTimer();
@@ -163,6 +188,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize click overlay immediately
   showClickToStart();
+
+  // Start camera immediately when page loads
+  handTracker.startCamera().catch(console.error);
 
   // Fallback if video fails to load
   introVideo.addEventListener('error', () => {
