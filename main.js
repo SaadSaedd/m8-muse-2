@@ -107,16 +107,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Function to start the main quiz app
   function startMainApp() {
-    // Hide click to start overlay and intro
-    clickToStartOverlay.classList.add('hide');
-    introContainer.classList.add('fade-out');
+    // Show animation first
+    if (typeof window.showAnimation === 'function') {
+      window.showAnimation();
+    }
     
-    // Show main app after overlay fades
+    // Start the quiz after animation with smooth transition (3.3 seconds total)
     setTimeout(() => {
-      introContainer.style.display = 'none';
-      mainApp.classList.add('show');
-      initializeQuizApp();
-    }, 500);
+      mainApp.style.opacity = '0';
+      mainApp.style.display = 'block';
+      mainApp.style.transition = 'opacity 0.5s ease-in-out';
+      
+      // Fade in the main app
+      setTimeout(() => {
+        mainApp.classList.add('show');
+        mainApp.style.opacity = '1';
+        initializeQuizApp();
+      }, 50);
+    }, 3300);
   }
 
   // Function to show intro video again

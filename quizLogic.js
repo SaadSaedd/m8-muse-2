@@ -1,10 +1,10 @@
-// lgbtqQuizLogic.js - Opinion-based quiz for LGBTQ+ topics
+// new lgbtqQuizLogic.js - Updated version with page refresh restart and no auto-timer
 class QuizManager {
   constructor(wordAnimator) {
     this.wordAnimator = wordAnimator;
     this.quizData = [
       { 
-        question: 'Vind jij dat lesbische vrouwen zich veilig moeten kunnen voelen om hand in hand over straat te lopen?', 
+        question: 'Vind jij dat LGBTQ+ vrouwen zich veilig moeten kunnen voelen om hand in hand over straat te lopen?', 
         answers: ['Ja, helemaal mee eens', 'Ja, maar niet overal', 'Geen commentaar', 'Nee, helemaal mee oneens'], 
         responses: {
           0: ['Mooi!', 'Liefde is liefde', 'Veiligheid voor iedereen', 'Respect!', 'Goed standpunt', 'Iedereen verdient liefde'],
@@ -14,7 +14,7 @@ class QuizManager {
         }
       },
       { 
-        question: 'Ben jij van mening dat er meer ontmoetingsplekken moeten komen voor lesbische en bi+ vrouwen?', 
+        question: 'Ben jij van mening dat er meer ontmoetingsplekken moeten komen voor LGBTQ+ vrouwen?', 
         answers: ['Ja, helemaal mee eens', 'Ja, maar niet overal', 'Geen commentaar', 'Nee, helemaal mee oneens'], 
         responses: {
           0: ['Super!', 'Gemeenschap is kracht', 'Meer plekken!', 'Verbinding helpt', 'Geweldig idee', 'Mooi gezegd'],
@@ -24,7 +24,7 @@ class QuizManager {
         }
       },
       { 
-        question: 'Vind jij dat de gemeente moet zorgen voor veilige ruimtes voor LGBTQ-vrouwen van kleur?', 
+        question: 'Vind jij dat de gemeente moet zorgen voor veilige ruimtes voor LGBTQ+ vrouwen van kleur?', 
         answers: ['Ja, helemaal mee eens', 'Ja, maar niet overal', 'Geen commentaar', 'Nee, helemaal mee oneens'], 
         responses: {
           0: ['Krachtig!', 'Inclusie belangrijk', 'Gelijkheid!', 'Geweldig standpunt', 'Diversiteit', 'Mooi gezegd'],
@@ -34,7 +34,7 @@ class QuizManager {
         }
       },
       { 
-        question: 'Denk jij dat LGBTQ+ voorlichting op scholen belangrijk is?', 
+        question: 'Vind jij dat er in de toekomst LGBTQ+ voorlichting moet komen op scholen?', 
         answers: ['Ja, helemaal mee eens', 'Ja, maar niet overal', 'Geen commentaar', 'Nee, helemaal mee oneens'], 
         responses: {
           0: ['Geweldig!', 'Educatie helpt', 'Begrip kweken', 'Heel belangrijk', 'Goede keuze', 'Vooruitgang'],
@@ -44,7 +44,7 @@ class QuizManager {
         }
       },
       { 
-        question: 'Vind jij dat homoseksuele stellen kinderen mogen adopteren?', 
+        question: 'Vind jij dat lesbische stellen kinderen mogen adopteren?', 
         answers: ['Ja, helemaal mee eens', 'Ja, maar niet overal', 'Geen commentaar', 'Nee, helemaal mee oneens'], 
         responses: {
           0: ['Liefde telt!', 'Gezin is liefde', 'Warm thuis', 'Mooi standpunt', 'Gelijkheid', 'Prachtig'],
@@ -59,77 +59,60 @@ class QuizManager {
     this.isTransitioning = false;
     this.responses = []; // Store user responses
     this.questionEl = document.querySelector('.quiz-section .question .text-question');
-    this.questionContainer = document.querySelector('.quiz-section .question'); // Add reference to question container
+    this.questionContainer = document.querySelector('.quiz-section .question');
     this.answersEl = document.querySelector('.quiz-section .answers');
     this.progressBar = document.getElementById('progressBar');
     this.quizSection = document.querySelector('.quiz-section');
     
     this.onUserInteractionCallback = null;
     this.onQuizCompleteCallback = null;
+    this.onRestartToHomeCallback = null;
 
     // Finger emojis voor gesture mode (aantal vingers)
     this.fingerEmojis = ['☝️', '✌️', '🤟', '🖐️'];
     
-    // Categorized word collections based on answer types
+    // Updated word categories based on your specifications
     this.wordCategories = {
-      // Words for positive/supportive answers (Ja, helemaal mee eens)
-      positive: ['lesbisch en vrij', 'trots', 'zichtbaar', 'liefde', 'zorg', 'transvrijheid', 'inclusief', 'veiligheid', 'sterk', 'hoorbaar', 'onzichtbaar? nooit!', 'eigenmachtig'],
-      
-      // Words for conditional answers (Ja, maar niet overal)
-      conditional: ['haat', 'overleven', 'slopen', 'lawaai', 'verzet', 'trots', 'opstandig', 'angst', 'onveilig', 'pot'],
-      
-      // Words for neutral answers (Geen commentaar)
-      neutral: ['wegloper', 'pot', 'leegte', 'angst', 'geweld', 'transhaat', 'slapzak', 'schaam je', 'hypocriet', 'haat', 'lippen dicht handen vuil'],
-      
-      // Words for negative answers (Nee, helemaal mee oneens)
-      negative: ['onzichtbaar', 'onveilig', 'machteloos', 'geen vrijheid', 'gevangenschap', 'vrouwenhaat', 'gebroken', 'misbruikt', 'verraad', 'verstikt', 'afgestompt']
+      positive: ['lesbisch en vrij', 'trots', 'liefde', 'zorg', 'transvrijheid', 'inclusie', 'veiligheid', 'sterk', 'eigenmachtig', 'zelfstandig', 'vrijheid', 'blij'],
+      conditional: ['onzeker', 'overleven', 'trots', 'liefde', 'sterk', 'nerveus', 'lawaai', 'ongelijk', 'vooroordelen', 'donker'],
+      neutral: ['weglopen', 'leegte', 'alleen', 'losgekoppeld', 'ogen dicht', 'liefde', 'duister', 'trots', 'nood'],
+      negative: ['onzichtbaar', 'onveilig', 'gebroken', 'onzeker', 'liefde', 'boos', 'angst', 'onverschillig', 'chaos', 'crisis']
     };
     
-    // Default words to show initially
     this.defaultWords = this.wordCategories.positive;
-    
-    // Track current word mode
     this.currentResponseWords = null;
     
-    // Initialize question container styling
     this.setupQuestionContainer();
   }
 
   setupQuestionContainer() {
     if (this.questionContainer) {
-      // Apply background image and styling to question container
       this.questionContainer.style.position = 'relative';
-      this.questionContainer.style.backgroundImage = 'url("text.png")'; // Change to your image path
+      this.questionContainer.style.backgroundImage = 'url("text.png")';
       this.questionContainer.style.backgroundSize = 'cover';
       this.questionContainer.style.backgroundPosition = 'center';
       this.questionContainer.style.backgroundRepeat = 'no-repeat';
-      this.questionContainer.style.minHeight = '350px'; // Increased height
-      this.questionContainer.style.height = 'auto'; // Allow height to grow
+      this.questionContainer.style.minHeight = '350px';
+      this.questionContainer.style.height = 'auto';
       this.questionContainer.style.display = 'flex';
       this.questionContainer.style.alignItems = 'center';
       this.questionContainer.style.justifyContent = 'center';
       this.questionContainer.style.padding = '1.5rem';
       this.questionContainer.style.borderRadius = '15px';
       this.questionContainer.style.marginBottom = '2rem';
+      this.questionContainer.style.overflow = 'visible';
       
-      this.questionContainer.style.overflow = 'visible'; // Ensure text isn't clipped
-      
-      // Style the question text for better readability
       if (this.questionEl) {
         this.questionEl.style.position = 'relative';
         this.questionEl.style.zIndex = '2';
         this.questionEl.style.textAlign = 'center';
-        this.questionEl.style.fontSize = 'clamp(1.1rem, 2.5vw, 1.4rem)'; // Responsive font size
+        this.questionEl.style.fontSize = 'clamp(1.1rem, 2.5vw, 1.4rem)';
         this.questionEl.style.fontWeight = 'bold';
         this.questionEl.style.lineHeight = '1.3';
-        this.questionEl.style.color = '#ffffff';
-        
         this.questionEl.style.padding = '1.2rem';
         this.questionEl.style.color = 'black';
         this.questionEl.style.marginLeft = '2rem';
-        
         this.questionEl.style.borderRadius = '12px';
-        
         this.questionEl.style.maxWidth = '60%';
         this.questionEl.style.width = '100%';
         this.questionEl.style.boxSizing = 'border-box';
@@ -137,7 +120,7 @@ class QuizManager {
         this.questionEl.style.overflowWrap = 'break-word';
         this.questionEl.style.hyphens = 'auto';
         
-        // Add media query styles for smaller screens
+        // Add responsive styles
         const style = document.createElement('style');
         style.textContent = `
           @media (max-width: 768px) {
@@ -176,6 +159,10 @@ class QuizManager {
     this.onQuizCompleteCallback = callback;
   }
 
+  setOnRestartToHomeCallback(callback) {
+    this.onRestartToHomeCallback = callback;
+  }
+
   updateProgress() {
     const progress = (this.currentIndex / this.quizData.length) * 100;
     this.progressBar.style.width = `${progress}%`;
@@ -184,10 +171,8 @@ class QuizManager {
   async loadQuestion() {
     const q = this.quizData[this.currentIndex];
     
-    // Smooth question transition
     await this.animateQuestionChange(q.question);
     
-    // Clear and rebuild answers
     this.answersEl.innerHTML = '';
     
     q.answers.forEach((ans, i) => {
@@ -196,17 +181,14 @@ class QuizManager {
       btn.style.opacity = '0';
       btn.style.transform = 'scale(0.8) translateY(20px)';
       btn.style.cursor = 'pointer';
-      
-      // Completely clean button styling - only the image
       btn.style.position = 'relative';
       btn.style.width = '100%';
       btn.style.height = '100%';
       btn.style.border = 'none';
-      btn.style.background = 'transparent ';
+      btn.style.background = 'transparent';
       btn.style.padding = '0';
       btn.style.margin = '0';
       
-      // Pure image display
       const img = document.createElement('img');
       img.src = 'button.png';
       img.alt = ans;
@@ -216,7 +198,6 @@ class QuizManager {
       img.style.objectFit = 'cover';
       img.style.display = 'block';
       
-      // Text overlay - completely transparent background
       const overlay = document.createElement('div');
       overlay.className = 'button-overlay';
       overlay.style.position = 'absolute';
@@ -228,7 +209,6 @@ class QuizManager {
       overlay.style.alignItems = 'center';
       overlay.style.justifyContent = 'center';
       overlay.style.flexDirection = 'column';
-     
       overlay.style.color = 'black';
       overlay.style.textShadow = '1px 1px 2px rgba(255, 255, 255, 0.8)';
       overlay.style.fontSize = '1rem';
@@ -238,7 +218,6 @@ class QuizManager {
       overlay.style.pointerEvents = 'none';
       overlay.innerHTML = `<span class="finger-emoji" style="font-size: 1.2rem; margin-bottom: 4px;">${this.fingerEmojis[i]}</span><span class="answer-text" style="font-size: 1.6rem;">${ans}</span>`;
       
-      // Simple hover effect - slight scale
       btn.addEventListener('mouseenter', () => {
         btn.style.transform = 'scale(1.02)';
         btn.style.transition = 'transform 0.2s ease';
@@ -253,7 +232,6 @@ class QuizManager {
       btn.addEventListener('click', () => this.handleResponse(i, btn));
       this.answersEl.appendChild(btn);
       
-      // Staggered animation
       requestAnimationFrame(() => {
         setTimeout(() => {
           btn.style.transition = 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
@@ -263,7 +241,6 @@ class QuizManager {
       });
     });
     
-    // Only show question words if we don't have response words to keep
     if (!this.currentResponseWords || this.currentIndex === 0) {
       this.wordAnimator.renderWords([...this.defaultWords]);
     }
@@ -274,7 +251,6 @@ class QuizManager {
 
   async animateQuestionChange(newQuestion) {
     return new Promise((resolve) => {
-      // Animate the entire question container
       this.questionContainer.style.transition = 'all 0.4s ease-out';
       this.questionContainer.style.opacity = '0';
       this.questionContainer.style.transform = 'translateY(-30px) scale(0.95)';
@@ -288,7 +264,6 @@ class QuizManager {
     });
   }
 
-  // Get words based on answer index
   getWordsForAnswer(answerIndex) {
     switch(answerIndex) {
       case 0: return this.wordCategories.positive;
@@ -305,7 +280,6 @@ class QuizManager {
 
     const q = this.quizData[this.currentIndex];
     
-    // Store the response
     this.responses.push({
       questionIndex: this.currentIndex,
       answerIndex: selectedIndex,
@@ -316,7 +290,6 @@ class QuizManager {
       this.onUserInteractionCallback();
     }
     
-    // Disable other buttons
     const allButtons = this.answersEl.querySelectorAll('.answer');
     allButtons.forEach(btn => {
       if (btn !== btnElement) {
@@ -326,14 +299,11 @@ class QuizManager {
       }
     });
     
-    // Get words based on the selected answer and store them
     const responseWords = this.getWordsForAnswer(selectedIndex);
     this.currentResponseWords = responseWords;
     
-    // Animate selected answer and show response words
     await this.animateSelectedAnswer(btnElement, responseWords);
     
-    // Longer delay to keep response words visible
     setTimeout(async () => {
       this.currentIndex++;
       if (this.currentIndex < this.quizData.length) {
@@ -341,7 +311,7 @@ class QuizManager {
       } else {
         this.completeQuiz();
       }
-    }, 2000); // Increased from 800ms to 2000ms
+    }, 2000);
   }
 
   async animateSelectedAnswer(btnElement, responseWords) {
@@ -350,10 +320,7 @@ class QuizManager {
       btnElement.classList.add('selected-opinion');
       btnElement.style.transform = 'scale(1.1)';
       
-      // Update words to show response and keep them
       this.wordAnimator.renderWords(responseWords);
-      
-      // Add gentle particle effect
       this.createResponseParticles(btnElement);
       
       setTimeout(resolve, 400);
@@ -365,7 +332,6 @@ class QuizManager {
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
 
-    // Gentler particles for opinion responses
     for (let i = 0; i < 6; i++) {
       const particle = document.createElement('div');
       particle.style.position = 'fixed';
@@ -373,7 +339,7 @@ class QuizManager {
       particle.style.top = centerY + 'px';
       particle.style.width = '6px';
       particle.style.height = '6px';
-       // Purple color
+      particle.style.backgroundColor = '#8b5cf6';
       particle.style.borderRadius = '50%';
       particle.style.pointerEvents = 'none';
       particle.style.zIndex = '1000';
@@ -406,7 +372,7 @@ class QuizManager {
     this.questionContainer.style.transform = 'scale(1.05)';
     
     this.questionEl.style.transition = 'all 0.5s ease-out';
-    this.questionEl.textContent = 'Bedankt voor je meningen!';
+    this.questionEl.textContent = 'Bedankt!';
     this.quizSection.classList.add('quiz-complete');
     
     // Clear answers with fade out
@@ -426,76 +392,151 @@ class QuizManager {
       // Show summary
       const summaryDiv = document.createElement('div');
       summaryDiv.className = 'quiz-summary';
+      summaryDiv.style.opacity = '0';
+      summaryDiv.style.transform = 'translateY(20px)';
+      summaryDiv.style.transition = 'all 0.5s ease-out';
+      summaryDiv.style.textAlign = 'center';
+      summaryDiv.style.padding = '20px';
+      summaryDiv.style.fontSize = '1.1rem';
+      summaryDiv.style.color = '#333';
       
-      const restartBtn = document.createElement('div');
-      restartBtn.className = 'answer restart-button image-button';
 
-      restartBtn.style.gridColumn = '1 / -1';
-      restartBtn.style.opacity = '0';
-      restartBtn.style.transform = 'scale(0.8)';
-      restartBtn.style.cursor = 'pointer';
-      
-      // Clean restart button styling - just the image
-      restartBtn.style.position = 'relative';
-      restartBtn.style.width = '60vw';
-      restartBtn.style.height = '12rem';
-      restartBtn.style.border = 'none';
-      restartBtn.style.background = 'none';
-      restartBtn.style.padding = '0';
-      restartBtn.style.margin = '0';
-      
-      // Create image and overlay for restart button
-      const restartImg = document.createElement('img');
-      restartImg.src = 'button.png';
-      restartImg.alt = 'Opnieuw Beginnen';
-      restartImg.className = 'button-image';
-      restartImg.style.width = '100vw';
-      restartImg.style.height = '100rem';
-      restartImg.style.objectFit = 'cover';
-      restartImg.style.display = 'block';
-      
-      const restartOverlay = document.createElement('div');
-      restartOverlay.className = 'button-overlay';
-      restartOverlay.style.position = 'absolute';
-      restartOverlay.style.top = '0';
-      restartOverlay.style.left = '0';
-      restartOverlay.style.right = '0';
-      restartOverlay.style.bottom = '0';
-      restartOverlay.style.display = 'flex';
-      restartOverlay.style.alignItems = 'center';
-      restartOverlay.style.justifyContent = 'center';
-      restartOverlay.style.flexDirection = 'column';
-      restartOverlay.style.background = 'transparent';
-      restartOverlay.style.color = 'black';
-      restartOverlay.style.textShadow = '1px 1px 2px rgba(255, 255, 255, 0.8)';
-      restartOverlay.style.fontSize = '1.2rem';
-      restartOverlay.style.fontWeight = 'bold';
-      restartOverlay.style.textAlign = 'center';
-      restartOverlay.style.padding = '8px';
-      restartOverlay.style.pointerEvents = 'none';
-      restartOverlay.innerHTML = '<span class="finger-emoji" style="font-size: 1.4rem; margin-bottom: 4px;">🔄</span><span class="answer-text" style="font-size: 1rem;">Opnieuw Beginnen</span>';
-      
-      restartBtn.appendChild(restartImg);
-      restartBtn.appendChild(restartOverlay);
-      
-      restartBtn.addEventListener('click', () => {
-        if (this.onUserInteractionCallback) {
-          this.onUserInteractionCallback();
-        }
-        if (this.onQuizCompleteCallback) {
-          this.onQuizCompleteCallback();
-        }
-      });
-      
+      // Fix the question container to show the full background image properly - MADE MUCH BIGGER
+      this.questionContainer.style.width = '70vw'; // Set specific width
+      this.questionContainer.style.height = '20rem'; // Set specific height
+      this.questionContainer.style.backgroundSize = 'contain';
+      this.questionContainer.style.backgroundPosition = 'center';
+      this.questionContainer.style.backgroundRepeat = 'no-repeat';
+      this.questionContainer.style.padding = '0';
+      this.questionContainer.style.marginBottom = '2rem';
+      this.questionContainer.style.display = 'flex';
+    
+      this.questionContainer.style.alignItems = 'center';
+      this.questionContainer.style.justifyContent = 'center';
+      this.questionContainer.style.position = 'relative';
+      this.questionContainer.style.margin = '0 auto 2rem auto'; // Center the container
+
+      // Position the text perfectly in the center of the decorative frame - MADE MUCH BIGGER
+      if (this.questionEl) {
+        this.questionEl.style.backgroundColor = 'transparent';
+        this.questionEl.style.color = 'black'; // Changed to white for better visibility
+        this.questionEl.style.fontSize = '4rem'; // Even bigger - increased from 3rem
+        this.questionEl.style.fontWeight = 'bold'; 
+        this.questionEl.style.textAlign = 'center';
+         this.questionEl.style.marginLeft = '2rem'; 
+        this.questionEl.style.padding = '0'; // Remove padding to center better
+        this.questionEl.style.margin = '0';
+        this.questionEl.style.position = 'absolute'; // Changed to absolute positioning
+        this.questionEl.style.top = '50%';
+        this.questionEl.style.left = '50%';
+        this.questionEl.style.transform = 'translate(-50%, -50%)'; // Perfect centering
+        this.questionEl.style.maxWidth = 'none';
+        this.questionEl.style.zIndex = '10'; // Ensure text is on top
+      }
+
+      // In the completeQuiz() method, replace the restart button creation section with this:
+
+// Replace the restart button creation section in completeQuiz() method with this:
+
+// Create restart button with proper finger gesture support
+const restartBtn = document.createElement('div');
+restartBtn.className = 'answer restart-button image-button';
+
+// Add gesture detection attributes
+restartBtn.setAttribute('data-gesture-target', 'restart');
+restartBtn.setAttribute('data-finger-count', '1'); // Single finger gesture
+
+restartBtn.style.gridColumn = '1 / -1';
+restartBtn.style.opacity = '0';
+restartBtn.style.transform = 'scale(0.8)';
+restartBtn.style.cursor = 'pointer';
+
+// Clean restart button styling - just the image
+restartBtn.style.position = 'relative';
+restartBtn.style.width = '60vw';
+restartBtn.style.height = '20rem';
+restartBtn.style.border = 'none';
+restartBtn.style.background = 'none';
+restartBtn.style.padding = '0';
+restartBtn.style.margin = '0';
+
+// Create image and overlay for restart button
+const restartImg = document.createElement('img');
+restartImg.src = 'button.png';
+restartImg.alt = 'Opnieuw Beginnen';
+restartImg.className = 'button-image';
+restartImg.style.width = '100%';
+restartImg.style.height = '100%';
+restartImg.style.objectFit = 'cover';
+restartImg.style.display = 'block';
+
+const restartOverlay = document.createElement('div');
+restartOverlay.className = 'button-overlay';
+restartOverlay.style.position = 'absolute';
+restartOverlay.style.top = '0';
+restartOverlay.style.left = '0';
+restartOverlay.style.right = '0';
+restartOverlay.style.bottom = '0';
+restartOverlay.style.display = 'flex';
+restartOverlay.style.alignItems = 'center';
+restartOverlay.style.justifyContent = 'center';
+restartOverlay.style.flexDirection = 'column';
+restartOverlay.style.background = 'transparent';
+restartOverlay.style.color = 'black';
+restartOverlay.style.textShadow = '1px 1px 2px rgba(255, 255, 255, 0.8)';
+restartOverlay.style.fontSize = '1.2rem';
+restartOverlay.style.fontWeight = 'bold';
+restartOverlay.style.textAlign = 'center';
+restartOverlay.style.padding = '8px';
+restartOverlay.style.pointerEvents = 'none';
+
+// Use the finger emoji from your fingerEmojis array (☝️ for single finger)
+restartOverlay.innerHTML = `
+  <span class="finger-emoji" style="font-size: 1.4rem; margin-bottom: 4px;">${this.fingerEmojis[0]}</span>
+  <span class="answer-text" style="font-size: 1rem;">Opnieuw Beginnen</span>
+`;
+
+// Add hover effects like other buttons
+restartBtn.addEventListener('mouseenter', () => {
+  restartBtn.style.transform = 'scale(1.02)';
+  restartBtn.style.transition = 'transform 0.2s ease';
+});
+
+restartBtn.addEventListener('mouseleave', () => {
+  restartBtn.style.transform = 'scale(1)';
+});
+
+restartBtn.appendChild(restartImg);
+restartBtn.appendChild(restartOverlay);
+
+// Click handler for restart button
+restartBtn.addEventListener('click', () => {
+  console.log('Restart button clicked - refreshing page');
+  if (this.onUserInteractionCallback) {
+    this.onUserInteractionCallback();
+  }
+  // Refresh the page to start over
+  window.location.reload();
+});
+
+this.answersEl.appendChild(summaryDiv);
+this.answersEl.appendChild(restartBtn);
+
+
+
+
+      // Ensure the answers container is centered
+      this.answersEl.style.display = 'flex';
+      this.answersEl.style.flexDirection = 'column';
+      this.answersEl.style.alignItems = 'center';
+      this.answersEl.style.justifyContent = 'center';
+      this.answersEl.style.padding = '20px';
+
       this.answersEl.appendChild(summaryDiv);
       this.answersEl.appendChild(restartBtn);
       
       // Animate elements in
       requestAnimationFrame(() => {
-        summaryDiv.style.opacity = '0';
-        summaryDiv.style.transform = 'translateY(20px)';
-        summaryDiv.style.transition = 'all 0.5s ease-out';
-        
         setTimeout(() => {
           summaryDiv.style.opacity = '1';
           summaryDiv.style.transform = 'translateY(0)';
@@ -512,17 +553,10 @@ class QuizManager {
     this.updateProgress();
     this.wordAnimator.renderWords(['Jouw stem telt', 'Bedankt!', 'Inclusie is belangrijk', 'Samen sterker', 'Respect']);
     
-    // Auto-restart after 15 seconds
-    setTimeout(() => {
-      if (this.currentIndex >= this.quizData.length) {
-        if (this.onQuizCompleteCallback) {
-          this.onQuizCompleteCallback();
-        }
-      }
-    }, 15000);
+    // NO AUTO-RESTART: Removed the 15-second timer completely
   }
 
-  // Method to toggle word sets (now cycles through categories)
+  // Method to toggle word sets
   toggleWordSet() {
     const categories = Object.keys(this.wordCategories);
     const currentCategory = Object.keys(this.wordCategories).find(key => 
@@ -533,13 +567,24 @@ class QuizManager {
     
     this.defaultWords = this.wordCategories[categories[nextIndex]];
     
-    // Update words immediately if we're not showing response words
     if (!this.currentResponseWords || this.currentIndex === 0) {
       this.wordAnimator.renderWords([...this.defaultWords]);
     }
   }
 
-  reset() {
+  // Method to restart to home screen
+  restartToHome() {
+    // If we have a callback to return to home, use it
+    if (this.onRestartToHomeCallback) {
+      this.onRestartToHomeCallback();
+    } else {
+      // Fallback to page refresh
+      window.location.reload();
+    }
+  }
+
+  // Restart method that properly resets everything (but stays in quiz)
+  restart() {
     this.currentIndex = 0;
     this.isTransitioning = false;
     this.responses = [];
@@ -550,39 +595,67 @@ class QuizManager {
     if (this.questionContainer) {
       this.questionContainer.style.transform = 'translateY(0) scale(1)';
       this.questionContainer.style.opacity = '1';
+      this.questionContainer.style.minHeight = '350px';
+      this.questionContainer.style.backgroundSize = 'cover';
+      this.questionContainer.style.padding = '1.5rem';
+    }
+    
+    // Reset question text styling
+    if (this.questionEl) {
+      this.questionEl.style.backgroundColor = 'transparent';
+      this.questionEl.style.color = 'black';
+      this.questionEl.style.fontSize = 'clamp(1.1rem, 2.5vw, 1.4rem)';
+      this.questionEl.style.fontWeight = 'bold';
+      this.questionEl.style.textAlign = 'center';
+      this.questionEl.style.padding = '1.2rem';
+      this.questionEl.style.marginLeft = '2rem';
+      this.questionEl.style.borderRadius = '12px';
+      this.questionEl.style.maxWidth = '60%';
+      this.questionEl.style.width = '100%';
+      this.questionEl.style.position = 'relative';
+      this.questionEl.style.zIndex = '2';
+    }
+    
+    // Reset answers container styling
+    if (this.answersEl) {
+      this.answersEl.style.display = '';
+      this.answersEl.style.flexDirection = '';
+      this.answersEl.style.alignItems = '';
+      this.answersEl.style.justifyContent = '';
+      this.answersEl.style.padding = '';
     }
     
     this.loadQuestion();
   }
 
+  reset() {
+    this.restart();
+  }
+
   start() {
-    this.reset();
+    this.restart();
   }
 
   isCompleted() {
     return this.currentIndex >= this.quizData.length;
   }
 
-  // Get user responses for analysis
   getResponses() {
     return this.responses;
   }
 
-  // Method to update question background image
   setQuestionBackgroundImage(imagePath) {
     if (this.questionContainer) {
       this.questionContainer.style.backgroundImage = `url("${imagePath}")`;
     }
   }
 
-  // Method to customize question container styling
   customizeQuestionContainer(styles) {
     if (this.questionContainer) {
       Object.assign(this.questionContainer.style, styles);
     }
   }
 
-  // Method to customize question text styling
   customizeQuestionText(styles) {
     if (this.questionEl) {
       Object.assign(this.questionEl.style, styles);

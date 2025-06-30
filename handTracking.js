@@ -279,7 +279,7 @@ class HandTracker {
     
     // Position the indicator in the center horizontally and lower vertically (above quiz section)
     const centerX = this.canvas.width / 2;
-    const centerY = this.canvas.height - 180; // Much lower, above quiz section
+    const centerY = this.canvas.height - 280; // Much lower, above quiz section
     const radius = 35; // Slightly smaller
     
     // Calculate progress angle
@@ -362,12 +362,13 @@ class HandTracker {
     this.ctx.font = 'bold 20px Arial';
     this.ctx.textAlign = 'center';
     this.ctx.textBaseline = 'middle';
+
     this.ctx.fillText(countdownSeconds.toString(), centerX, centerY);
     
     // Draw "WAIT" text below with transparency
     this.ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'; // More transparent
     this.ctx.font = '10px Arial';
-    this.ctx.fillText('WAIT', centerX, centerY + 45);
+    this.ctx.fillText('CoolDown', centerX, centerY + 45);
     
     this.ctx.restore();
   }

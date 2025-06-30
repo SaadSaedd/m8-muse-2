@@ -13,8 +13,166 @@
 </head>
 <style>
     
+  /* Animation Container Styles */
+
+  .animation-container {
+
+    position: fixed;
+
+    top: 0;
+
+    left: 0;
+
+    width: 100vw;
+
+    height: 100vh;
+
+    background: #000;
+
+    display: none;
+
+    justify-content: center;
+
+    align-items: center;
+
+    z-index: 1000;
+
+    overflow: hidden;
+
+    opacity: 0;
+
+    transition: opacity 0.3s ease-in-out;
+
+  }
+
+  .animation-container.active {
+
+    display: flex !important;
+
+    opacity: 1;
+
+  }
+
+  /* Animation GIF Styles */
+
+  .animation-gif {
+
+    max-width: 100%;
+
+    max-height: 100%;
+
+    object-fit: contain;
+
+    transform: scale(0.8);
+
+    transition: transform 0.5s ease-out;
+
+  }
+
+  .animation-container.active .animation-gif {
+
+    transform: scale(1);
+
+  }
+
+  /* Instructions Popup Styles */
+  .instructions-popup {
+    position: fixed;
+    top: 50%;
+    left: -350px;
+    transform: translateY(-50%);
+    width: 320px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 1001;
+    transition: left 0.5s ease-out;
+    font-family: 'Arial', sans-serif;
+  }
+
+  .instructions-popup.show {
+    left: 20px;
+  }
+
+  .instructions-popup h3 {
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .instructions-popup p {
+    margin: 10px 0;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .finger-examples {
+    display: flex;
+    justify-content: space-around;
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+
+  .finger-example {
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .finger-number {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+  }
+
+  .close-btn:hover {
+    opacity: 1;
+  }
 </style>
 <body>
+  <!-- Instructions Popup -->
+  <div class="instructions-popup" id="instructionsPopup">
+    <button class="close-btn" id="closeInstructions">×</button>
+    <h3>🖐️ Hoe werkt het?</h3>
+    <p>Gebruik je vingers om antwoorden te kiezen:</p>
+    <div class="finger-examples">
+      <div class="finger-example">
+        <div class="finger-number">☝️</div>
+        <div>Antwoord 1</div>
+      </div>
+      <div class="finger-example">
+        <div class="finger-number">✌️</div>
+        <div>Antwoord 2</div>
+      </div>
+      <div class="finger-example">
+        <div class="finger-number">🤟</div>
+        <div>Antwoord 3</div>
+      </div>
+      <div class="finger-example">
+        <div class="finger-number">🖐️</div>
+        <div>Antwoord 4</div>
+      </div>
+    </div>
+    <p><strong>Tip:</strong> Steek het aantal vingers op dat overeenkomt met je antwoordkeuze!</p>
+  </div>
+
   <!-- Intro Video Container -->
   <div class="intro-container" id="introContainer">
     <video 
@@ -25,10 +183,14 @@
       loop
       playsinline
     >
-      <source src="testvid2.mp4" type="video/mp4">
+      <source src="Movie_003.mp4" type="video/mp4">
       Your browser does not support the video tag.
     </video>
     <button class="skip-button" id="skipButton">Skip Intro</button>
+  </div>
+   <div class="animation-container" id="animationContainer">
+    <!-- Using GIF for animation -->
+    <img src="ani.gif" alt="Animation" class="animation-gif" id="animationGif">
   </div>
 
   <!-- Click to Start Overlay -->
@@ -62,13 +224,93 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
-  
   <!-- Our custom JavaScript modules -->
   <script src="handTracking.js"></script>
   <script src="wordAnimation.js"></script>
   <script src="quizLogic.js"></script>
   <script src="main.js"></script>
-  
+  <script>
+    // Animation JavaScript - Modified to work with main.js
+    document.addEventListener('DOMContentLoaded', function () {
+      const animationContainer = document.getElementById('animationContainer');
+      const animationGif = document.getElementById('animationGif');
+      const introContainer = document.getElementById('introContainer');
+      const clickToStartOverlay = document.getElementById('clickToStartOverlay');
+      const instructionsPopup = document.getElementById('instructionsPopup');
+      const closeInstructions = document.getElementById('closeInstructions');
+
+      // Instructions popup functionality
+      function showInstructions() {
+        instructionsPopup.classList.add('show');
+        
+        // Auto-hide after 10 seconds
+        setTimeout(() => {
+          hideInstructions();
+        }, 10000);
+      }
+
+      function hideInstructions() {
+        instructionsPopup.classList.remove('show');
+      }
+
+      // Close button functionality
+      closeInstructions.addEventListener('click', hideInstructions);
+
+      // Function to show animation (called from main.js)
+      window.showAnimation = function() {
+        console.log('Starting animation sequence...');
+        
+        // Hide intro container with fade
+        introContainer.style.transition = 'opacity 0.3s ease-out';
+        introContainer.style.opacity = '0';
+        
+        setTimeout(() => {
+          introContainer.style.display = 'none';
+        }, 300);
+        
+        // Hide click to start overlay with fade
+        clickToStartOverlay.style.transition = 'opacity 0.3s ease-out';
+        clickToStartOverlay.style.opacity = '0';
+        
+        setTimeout(() => {
+          clickToStartOverlay.style.display = 'none';
+        }, 300);
+        
+        // Show animation container with fade in
+        setTimeout(() => {
+          animationContainer.style.display = 'flex';
+          animationContainer.classList.add('active');
+        }, 300);
+
+        // Force reload the GIF to restart it
+        if (animationGif) {
+          const gifSrc = 'ani.gif';
+          animationGif.src = '';
+          setTimeout(() => {
+            // Add timestamp to force browser to reload the GIF
+            animationGif.src = gifSrc + '?t=' + new Date().getTime();
+          }, 400);
+        }
+
+        // After 3 seconds, hide animation with fade out
+        setTimeout(() => {
+          console.log('Animation finished, fading out...');
+          animationContainer.style.opacity = '0';
+          
+          setTimeout(() => {
+            animationContainer.classList.remove('active');
+            animationContainer.style.display = 'none';
+            animationContainer.style.opacity = '1'; // Reset for next time
+            
+            // Show instructions popup after animation ends and quiz starts
+            setTimeout(() => {
+              showInstructions();
+            }, 500);
+          }, 300);
+        }, 3000);
+      };
+    });
+  </script>
 
   
 </body>

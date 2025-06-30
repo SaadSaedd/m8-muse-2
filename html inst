@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Quiz App</title>
+  <!-- MediaPipe Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+  <link rel="stylesheet" href="style2.css">
+  <link rel="stylesheet" href="qui">
+</head>
+<style>
+  /* Animation Container Styles */
+  .animation-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .animation-container.active {
+    display: flex !important;
+    opacity: 1;
+  }
+
+  .animation-gif {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transform: scale(0.8);
+    transition: transform 0.5s ease-out;
+  }
+
+  .animation-container.active .animation-gif {
+    transform: scale(1);
+  }
+
+  /* New Enhanced Instructions Screen - Similar to click-to-start */
+  .instructions-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    overflow: hidden;
+  }
+
+  .instructions-screen.active {
+    display: flex !important;
+    opacity: 1;
+  }
+
+  /* Floating background elements */
+  .instructions-floating-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .instructions-floating-hand {
+    position: absolute;
+    font-size: 4rem;
+    opacity: 0.1;
+    animation: instructionsFloat 15s infinite linear;
+    color: white;
+  }
+
+  @keyframes instructionsFloat {
+    0% {
+      transform: translateY(100vh) rotate(0deg);
+    }
+    100% {
+      transform: translateY(-20vh) rotate(360deg);
+    }
+  }
+
+  /* Main instructions content */
+  .instructions-main-content {
+    text-align: center;
+    color: white;
+    z-index: 10;
+    max-width: 90%;
+    animation: instructionsFadeInUp 1s ease-out;
+  }
+
+  @keyframes instructionsFadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(50px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .instructions-title {
+    font-size: 4rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    animation: instructionsPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes instructionsPulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  .instructions-subtitle {
+    font-size: 1.8rem;
+    margin-bottom: 40px;
+    opacity: 0.9;
+    font-weight: 300;
+  }
+
+  /* Gesture guide grid */
+  .gesture-guide {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 30px;
+    max-width: 1000px;
+    margin: 0 auto 40px;
+    padding: 0 20px;
+  }
+
+  .gesture-card {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 30px;
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    animation: gestureCardFloat 3s ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+  }
+
+  .gesture-card:hover {
+    transform: translateY(-10px) scale(1.05);
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  }
+
+  @keyframes gestureCardFloat {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+
+  .gesture-emoji {
+    font-size: 5rem;
+    margin-bottom: 15px;
+    display: block;
+    animation: gestureEmojiBounce 2s ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+  }
+
+  @keyframes gestureEmojiBounce {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+  }
+
+  .gesture-label {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .gesture-description {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    line-height: 1.4;
+  }
+
+  /* Instructions tip */
+  .instructions-tip {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 25px;
+    margin: 30px auto;
+    max-width: 600px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+  }
+
+  .instructions-tip-text {
+    font-size: 1.3rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* Start button */
+  .instructions-start-btn {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    color: white;
+    border: none;
+    padding: 20px 50px;
+    font-size: 1.5rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    margin-top: 30px;
+    box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+    animation: startButtonPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes startButtonPulse {
+    0%, 100% {
+      box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+    }
+    50% {
+      box-shadow: 0 15px 40px rgba(255, 107, 107, 0.6);
+    }
+  }
+
+  .instructions-start-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 15px 40px rgba(255, 107, 107, 0.7);
+  }
+
+  /* Skip instructions text */
+  .skip-instructions {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    animation: skipTextBlink 2s ease-in-out infinite;
+  }
+
+  @keyframes skipTextBlink {
+    0%, 100% {
+      opacity: 0.7;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  /* Mini instructions during quiz */
+  .mini-instructions {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 100;
+  }
+
+  .mini-finger-guide {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .mini-finger {
+    text-align: center;
+    font-size: 0.8rem;
+  }
+
+  .mini-finger-emoji {
+    font-size: 1.5rem;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  /* Help button */
+  .help-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    z-index: 500;
+    display: none;
+  }
+
+  .help-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  }
+
+  .help-button.show {
+    display: block;
+  }
+
+  /* Answer number indicators */
+  .answer-number {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    text-align: center;
+    line-height: 30px;
+    font-weight: bold;
+    margin-right: 10px;
+    font-size: 1.1rem;
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .instructions-title {
+      font-size: 2.5rem;
+    }
+    
+    .instructions-subtitle {
+      font-size: 1.3rem;
+    }
+    
+    .gesture-guide {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+    
+    .gesture-emoji {
+      font-size: 3.5rem;
+    }
+    
+    .gesture-label {
+      font-size: 1.2rem;
+    }
+    
+    .gesture-description {
+      font-size: 1rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .gesture-guide {
+      grid-template-columns: 1fr;
+    }
+    
+    .instructions-title {
+      font-size: 2rem;
+    }
+  }
+</style>
+<body>
+  <!-- New Enhanced Instructions Screen -->
+  <div class="instructions-screen" id="instructionsScreen">
+    <div class="instructions-floating-elements" id="instructionsFloatingElements"></div>
+    
+    <div class="instructions-main-content">
+      <h1 class="instructions-title">🖐️ Quiz Instructies</h1>
+      <p class="instructions-subtitle">Gebruik je vingers om antwoorden te kiezen!</p>
+      
+      <div class="gesture-guide">
+        <div class="gesture-card" style="--delay: 0s;">
+          <span class="gesture-emoji" style="--delay: 0s;">☝️</span>
+          <div class="gesture-label">1 Vinger</div>
+          <div class="gesture-description">Antwoord A</div>
+        </div>
+        <div class="gesture-card" style="--delay: 0.3s;">
+          <span class="gesture-emoji" style="--delay: 0.3s;">✌️</span>
+          <div class="gesture-label">2 Vingers</div>
+          <div class="gesture-description">Antwoord B</div>
+        </div>
+        <div class="gesture-card" style="--delay: 0.6s;">
+          <span class="gesture-emoji" style="--delay: 0.6s;">🤟</span>
+          <div class="gesture-label">3 Vingers</div>
+          <div class="gesture-description">Antwoord C</div>
+        </div>
+        <div class="gesture-card" style="--delay: 0.9s;">
+          <span class="gesture-emoji" style="--delay: 0.9s;">🖖</span>
+          <div class="gesture-label">4 Vingers</div>
+          <div class="gesture-description">Antwoord D</div>
+        </div>
+      </div>
+      
+      <div class="instructions-tip">
+        <p class="instructions-tip-text">
+          💡 <strong>Tip:</strong> Houd je hand stil voor 2 seconden om het antwoord te bevestigen<br>
+          🎯 Zorg dat je hand goed zichtbaar is voor de camera
+        </p>
+      </div>
+      
+      <button class="instructions-start-btn" id="instructionsStartBtn">
+        🚀 Start de Quiz!
+      </button>
+    </div>
+    
+    <div class="skip-instructions" id="skipInstructions">
+      Steek 1 vinger op om door te gaan →
+    </div>
+  </div>
+
+  <!-- Intro Video Container -->
+  <div class="intro-container" id="introContainer">
+    <video 
+      id="introVideo" 
+      class="intro-video" 
+      autoplay 
+      muted 
+      loop
+      playsinline
+    >
+      <source src="Movie_003.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <button class="skip-button" id="skipButton">Skip Intro</button>
+  </div>
+  
+  <div class="animation-container" id="animationContainer">
+    <img src="ani.gif" alt="Animation" class="animation-gif" id="animationGif">
+  </div>
+
+  <!-- Click to Start Overlay -->
+  <div class="click-to-start-overlay" id="clickToStartOverlay">
+    <div class="floating-elements" id="floatingElements"></div>
+    <div class="click-prompt" id="clickPrompt">
+      <h1>Quiz Tijd!</h1>
+      <p>Klik om instructies te zien
+        <br>
+        <strong>Werkt met handgebaren! 🖐️</strong>
+      </p>
+      <div class="click-indicator"></div>
+    </div>
+  </div>
+
+  <!-- Main App (initially hidden) -->
+  <div class="main-app" id="mainApp">
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <!-- Mini instructions during quiz -->
+    <div class="mini-instructions" id="miniInstructions">
+      <div>🖐️ Gebruik vingers:</div>
+      <div class="mini-finger-guide">
+        <div class="mini-finger">
+          <span class="mini-finger-emoji">☝️</span>
+          <div>A</div>
+        </div>
+        <div class="mini-finger">
+          <span class="mini-finger-emoji">✌️</span>
+          <div>B</div>
+        </div>
+        <div class="mini-finger">
+          <span class="mini-finger-emoji">🤟</span>
+          <div>C</div>
+        </div>
+        <div class="mini-finger">
+          <span class="mini-finger-emoji">🖖</span>
+          <div>D</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="camera-section">
+      <video id="camera" class="flip" autoplay muted playsinline></video>
+      <canvas id="handCanvas"></canvas>
+      <div class="loading" id="loading">Loading hand tracking…</div>
+      <div class="words"></div>
+    </div>
+    
+    <div class="quiz-section">
+      <div class="question"><h2 class="text-question"></h2></div>
+      <div class="answers"></div>
+    </div>
+  </div>
+
+  <!-- Help button for during quiz -->
+  <button class="help-button" id="helpButton" title="Toon instructies">?</button>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
+  <script src="handTracking.js"></script>
+  <script src="wordAnimation.js"></script>
+  <script src="quizLogic.js"></script>
+  <script src="main.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const animationContainer = document.getElementById('animationContainer');
+      const animationGif = document.getElementById('animationGif');
+      const introContainer = document.getElementById('introContainer');
+      const clickToStartOverlay = document.getElementById('clickToStartOverlay');
+      const instructionsScreen = document.getElementById('instructionsScreen');
+      const instructionsStartBtn = document.getElementById('instructionsStartBtn');
+      const helpButton = document.getElementById('helpButton');
+      const clickPrompt = document.getElementById('clickPrompt');
+      const instructionsFloatingElements = document.getElementById('instructionsFloatingElements');
+
+      // Application state
+      let quizStarted = false;
+      let quizActivelyRunning = false;
+      let showingPreQuizInstructions = false;
+
+      // Create floating hand emojis for instructions background
+      function createInstructionsFloatingElements() {
+        const handEmojis = ['🖐️', '✋', '👋', '🤚', '✌️', '🤟', '🖖', '☝️'];
+        
+        for (let i = 0; i < 15; i++) {
+          const hand = document.createElement('div');
+          hand.className = 'instructions-floating-hand';
+          hand.textContent = handEmojis[Math.floor(Math.random() * handEmojis.length)];
+          
+          // Random positioning and animation delay
+          hand.style.left = Math.random() * 100 + '%';
+          hand.style.animationDelay = Math.random() * 15 + 's';
+          hand.style.animationDuration = (15 + Math.random() * 10) + 's';
+          
+          instructionsFloatingElements.appendChild(hand);
+        }
+      }
+
+      // Initialize floating elements
+      createInstructionsFloatingElements();
+
+      // Show animation first, then instructions when clicking on the start overlay
+      clickPrompt.addEventListener('click', function() {
+        if (window.showAnimation) {
+          window.showAnimation();
+        }
+      });
+
+      // Function to show animation (called from main.js and click prompt)
+      window.showAnimation = function() {
+        console.log('Starting animation sequence...');
+        
+        // IMPORTANT: Make sure quiz doesn't start yet
+        quizStarted = false;
+        quizActivelyRunning = false;
+        
+        // Hide intro and click overlay
+        introContainer.style.transition = 'opacity 0.3s ease-out';
+        introContainer.style.opacity = '0';
+        
+        setTimeout(() => {
+          introContainer.style.display = 'none';
+        }, 300);
+        
+        clickToStartOverlay.style.transition = 'opacity 0.3s ease-out';
+        clickToStartOverlay.style.opacity = '0';
+        
+        setTimeout(() => {
+          clickToStartOverlay.style.display = 'none';
+        }, 300);
+        
+        // Show animation
+        setTimeout(() => {
+          animationContainer.style.display = 'flex';
+          animationContainer.classList.add('active');
+        }, 300);
+
+        if (animationGif) {
+          const gifSrc = 'ani.gif';
+          animationGif.src = '';
+          setTimeout(() => {
+            animationGif.src = gifSrc + '?t=' + new Date().getTime();
+          }, 400);
+        }
+
+        // After animation, show NEW instructions screen - but DON'T start quiz yet
+        setTimeout(() => {
+          console.log('Animation finished, showing new instructions screen...');
+          animationContainer.style.opacity = '0';
+          
+          setTimeout(() => {
+            animationContainer.classList.remove('active');
+            animationContainer.style.display = 'none';
+            animationContainer.style.opacity = '1';
+            
+            // Show new enhanced instructions screen
+            instructionsScreen.style.display = 'flex';
+            instructionsScreen.classList.add('active');
+            
+            // Set flag that we're in pre-quiz instruction mode - quiz hasn't started yet!
+            showingPreQuizInstructions = true;
+            
+          }, 300);
+        }, 3000);
+      };
+
+      // Start quiz from new instructions screen
+      instructionsStartBtn.addEventListener('click', function() {
+        console.log('Start quiz button clicked from new instructions');
+        
+        // Hide instructions first
+        instructionsScreen.classList.remove('active');
+        
+        setTimeout(() => {
+          instructionsScreen.style.display = 'none';
+          
+          // Always proceed to start/continue quiz after hiding instructions
+          if (showingPreQuizInstructions) {
+            // This is the first time - actually initialize the quiz now
+            console.log('First time starting quiz - initializing everything');
+            showingPreQuizInstructions = false;
+            
+            // Show the quiz interface
+            const mainApp = document.getElementById('mainApp');
+            mainApp.style.display = 'block';
+            mainApp.classList.add('show');
+            mainApp.style.opacity = '1';
+            
+            // NOW start everything for real - ONLY NOW, not before!
+            quizStarted = true;
+            quizActivelyRunning = true;
+            
+            // Dispatch the quiz start event - this should trigger quiz initialization
+            console.log('Dispatching quizStarted event now...');
+            window.dispatchEvent(new CustomEvent('quizStarted'));
+            window.quizInterfaceShown = true;
+            
+            // Show help button
+            helpButton.classList.add('show');
+            
+          } else {
+            // This is help button case - just continue (quiz was already running)
+            console.log('Help case - continuing existing quiz');
+          }
+        }, 300);
+      });
+
+      // Help button functionality - show new instructions screen
+      helpButton.addEventListener('click', function() {
+        // Just show instructions - quiz keeps running in background
+        instructionsScreen.style.display = 'flex';
+        instructionsScreen.classList.add('active');
+      });
+
+      // Function to close instructions
+      function closeInstructions() {
+        instructionsScreen.classList.remove('active');
+        setTimeout(() => {
+          instructionsScreen.style.display = 'none';
+          
+          if (showingPreQuizInstructions) {
+            // First time - start the quiz by clicking the button
+            console.log('Finger gesture - starting quiz for first time');
+            // Simulate the button click to ensure same logic path
+            showingPreQuizInstructions = false;
+            
+            // Show the quiz interface
+            const mainApp = document.getElementById('mainApp');
+            mainApp.style.display = 'block';
+            mainApp.classList.add('show');
+            mainApp.style.opacity = '1';
+            
+            // NOW start everything for real - ONLY NOW!
+            quizStarted = true;
+            quizActivelyRunning = true;
+            
+            // Dispatch the quiz start event
+            console.log('Dispatching quizStarted event from gesture...');
+            window.dispatchEvent(new CustomEvent('quizStarted'));
+            window.quizInterfaceShown = true;
+            
+            // Show help button
+            helpButton.classList.add('show');
+          }
+          // For help case, do nothing special - quiz continues running
+        }, 300);
+      }
+
+      // Add click outside to close
+      instructionsScreen.addEventListener('click', function(e) {
+        if (e.target === instructionsScreen) {
+          closeInstructions();
+        }
+      });
+
+      // Add escape key to close
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && instructionsScreen.classList.contains('active')) {
+          closeInstructions();
+        }
+      });
+
+      // Expose functions globally
+      window.closeInstructions = closeInstructions;
+
+      // Add answer numbers to quiz answers
+      window.addEventListener('quizStarted', function() {
+        setTimeout(() => {
+          const answers = document.querySelectorAll('.answers > *');
+          answers.forEach((answer, index) => {
+            if (!answer.querySelector('.answer-number')) {
+              const numberSpan = document.createElement('span');
+              numberSpan.className = 'answer-number';
+              numberSpan.textContent = index + 1;
+              answer.insertBefore(numberSpan, answer.firstChild);
+            }
+          });
+        }, 100);
+      });
+
+      // Gesture detection for closing instructions (1 finger)
+      window.addEventListener('gestureDetected', function(event) {
+        if (event.detail.fingerCount === 1 && instructionsScreen.classList.contains('active')) {
+          console.log('1 finger detected - closing instructions');
+          closeInstructions();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
