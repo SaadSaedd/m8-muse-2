@@ -4,75 +4,239 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Live Quiz App</title>
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#667eea">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Quiz App">
+  <meta name="mobile-web-app-capable" content="yes">
+  
   <!-- MediaPipe Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
   <link rel="stylesheet" href="style2.css">
   <link rel="stylesheet" href="qui">
+  
+  <!-- Kiosk-like behaviors -->
+  <script>
+    // Service Worker Registration for PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('sw.js')
+          .then(function(registration) {
+            console.log('ServiceWorker registration successful');
+          })
+          .catch(function(err) {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+      });
+    }
+    
+    // PWA Install Prompt
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      // Automatically show install prompt for kiosk setup
+      setTimeout(() => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            console.log('PWA install choice:', choiceResult.outcome);
+          });
+        }
+      }, 2000);
+    });
+    
+    // Handle PWA launch
+    window.addEventListener('appinstalled', (evt) => {
+      console.log('PWA was installed');
+    });
+    
+    // Disable right-click context menu (kiosk-like behavior)
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
+    
+    // Disable F12, Ctrl+Shift+I, etc. (kiosk-like behavior)
+    document.addEventListener('keydown', function(e) {
+      // Disable F12
+      if (e.key === 'F12') {
+        e.preventDefault();
+      }
+      // Disable Ctrl+Shift+I
+      if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+        e.preventDefault();
+      }
+      // Disable Ctrl+U (view source)
+      if (e.ctrlKey && e.key === 'u') {
+        e.preventDefault();
+      }
+      // Disable Ctrl+S (save)
+      if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+      }
+      // Disable Alt+Tab (prevent switching apps in kiosk)
+      if (e.altKey && e.key === 'Tab') {
+        e.preventDefault();
+      }
+      // Disable Windows key
+      if (e.key === 'Meta') {
+        e.preventDefault();
+      }
+    });
+    
+    // Fullscreen on load (app-like behavior)
+    document.addEventListener('DOMContentLoaded', function() {
+      // Force fullscreen for PWA
+      function enterFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(err => {
+            console.log('Fullscreen request failed:', err);
+          });
+        }
+      }
+      
+      // Try to go fullscreen immediately
+      enterFullscreen();
+      
+      // Also try when user interacts
+      document.addEventListener('click', enterFullscreen, { once: true });
+      document.addEventListener('touchstart', enterFullscreen, { once: true });
+      
+      // Auto-request camera permissions (use-fake-ui-for-media-stream equivalent)
+      navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: 'user'
+        }, 
+        audio: false 
+      }).then(function(stream) {
+        console.log('Camera access granted');
+        // Store stream for later use
+        window.cameraStream = stream;
+      }).catch(function(err) {
+        console.log('Camera access denied:', err);
+      });
+      
+      // Prevent page unload/refresh (kiosk-like behavior)
+      window.addEventListener('beforeunload', function(e) {
+        e.preventDefault();
+        e.returnValue = '';
+      });
+      
+      // Keep page active (disable-background-timer-throttling equivalent)
+      setInterval(function() {
+        // Small operation to keep page active
+        document.body.style.transform = 'translateZ(0)';
+      }, 1000);
+      
+      // Prevent sleep/idle (disable-backgrounding-occluded-windows equivalent)
+      let wakeLock = null;
+      if ('wakeLock' in navigator) {
+        navigator.wakeLock.request('screen').then(function(lock) {
+          wakeLock = lock;
+          console.log('Screen wake lock acquired');
+        }).catch(function(err) {
+          console.log('Wake lock failed:', err);
+        });
+      }
+      
+      // Handle visibility change to maintain performance
+      document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+          // Page is hidden, but keep running (disable-renderer-backgrounding equivalent)
+          console.log('Page hidden but keeping active');
+        } else {
+          // Page is visible again
+          console.log('Page visible again');
+          // Re-acquire wake lock if lost
+          if ('wakeLock' in navigator && (!wakeLock || wakeLock.released)) {
+            navigator.wakeLock.request('screen').then(function(lock) {
+              wakeLock = lock;
+            }).catch(function(err) {
+              console.log('Wake lock re-acquisition failed:', err);
+            });
+          }
+        }
+      });
+    });
+    
+    // Disable text selection (kiosk-like behavior)
+    document.onselectstart = function() {
+      return false;
+    };
+    
+    // Disable drag and drop (kiosk-like behavior)
+    document.ondragstart = function() {
+      return false;
+    };
+    
+    // Auto-focus and prevent navigation away
+    window.addEventListener('focus', function() {
+      document.body.focus();
+    });
+    
+    // Override window.open to prevent popups (security equivalent)
+    window.open = function() {
+      console.log('Popup blocked');
+      return null;
+    };
+  </script>
 </head>
 <style>
-    
+  /* Kiosk-like styles */
+  * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  body {
+    overflow: hidden; /* Prevent scrolling in kiosk mode */
+    cursor: default;
+  }
+  
   /* Animation Container Styles */
-
   .animation-container {
-
     position: fixed;
-
     top: 0;
-
     left: 0;
-
     width: 100vw;
-
     height: 100vh;
-
     background: #000;
-
     display: none;
-
     justify-content: center;
-
     align-items: center;
-
     z-index: 1000;
-
     overflow: hidden;
-
     opacity: 0;
-
     transition: opacity 0.3s ease-in-out;
-
   }
 
   .animation-container.active {
-
     display: flex !important;
-
     opacity: 1;
-
   }
 
   /* Animation GIF Styles */
-
   .animation-gif {
-
     max-width: 100%;
-
     max-height: 100%;
-
     object-fit: contain;
-
     transform: scale(0.8);
-
     transition: transform 0.5s ease-out;
-
   }
 
   .animation-container.active .animation-gif {
-
     transform: scale(1);
-
   }
 
   /* Instructions Popup Styles */
@@ -311,7 +475,5 @@
       };
     });
   </script>
-
-  
 </body>
 </html>
