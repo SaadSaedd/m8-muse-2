@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Quiz App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<!-- Instructions Popup -->
+<div class="instructions-popup" id="instructionsPopup">
+  <button class="close-btn" id="closeInstructions">×</button>
+  <h3>🖐️ Hoe werkt het?</h3>
+  <p>Gebruik je vingers om antwoorden te kiezen:</p>
+  <div class="finger-examples">
+    <div class="finger-example">
+      <div class="finger-number">☝️</div>
+      <div>Antwoord 1</div>
+    </div>
+    <div class="finger-example">
+      <div class="finger-number">✌️</div>
+      <div>Antwoord 2</div>
+    </div>
+    <div class="finger-example">
+      <div class="finger-number">🤟</div>
+      <div>Antwoord 3</div>
+    </div>
+    <div class="finger-example">
+      <div class="finger-number">🖐️</div>
+      <div>Antwoord 4</div>
+    </div>
+  </div>
+
+  <p><strong>Tip:</strong> Steek het aantal vingers op dat overeenkomt met je antwoordkeuze!</p>
+</div>
+
+<!-- Intro Video Container -->
+<div class="intro-container" id="introContainer">
+  <video
+          id="introVideo"
+          class="intro-video"
+          autoplay
+          muted
+          loop
+          playsinline
+  >
+    <source src="Movie_003.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+<div class="animation-container" id="animationContainer">
+  <!-- Using GIF for animation -->
+  <img src="ani.gif" alt="Animation" class="animation-gif" id="animationGif">
+</div>
+
+<!-- Click to Start Overlay -->
+<div class="click-to-start-overlay" id="clickToStartOverlay">
+  <div class="floating-elements" id="floatingElements"></div>
+  <div class="click-prompt" id="clickPrompt">
+    <h1>Quiz Tijd!</h1>
+    <p>Klik om de quiz te starten
+      <br>
+      deze quiz werkt ook met handgebaren steek 5 fingers op
+    </p>
+    <div class="click-indicator"></div>
+  </div>
+</div>
+
+<!-- Main App (initially hidden) -->
+<div class="main-app" id="mainApp">
+  <div class="progress-bar" id="progressBar"></div>
+
+  <div class="camera-section">
+    <video id="camera" class="flip" autoplay muted playsinline></video>
+    <canvas id="handCanvas"></canvas>
+    <div class="loading" id="loading">Loading hand tracking…</div>
+    <div class="words"></div>
+  </div>
+
+  <div class="quiz-section">
+    <div class="question"><h2 class="text-question"></h2></div>
+    <div class="answers"></div>
+  </div>
+</div>
+
+
+<!-- PWA Manifest -->
+
+<!-- Linked Libraries -->
+<script src="javascripts/libraries/hands.js" defer></script>
+<script src="javascripts/libraries/camera_utils.js" defer></script>
+<script src="javascripts/libraries/drawing_utils.js" defer></script>
+<script src="javascripts/libraries/selfie_segmentation.js" defer></script>
+<!-- Our custom JavaScript modules -->
+<script src="javascripts/handTracking.js" defer></script>
+<script src="javascripts/wordAnimation.js" defer></script>
+<script src="javascripts/quizLogic.js" defer></script>
+<script src="javascripts/main.js" defer></script>
+<script>
+  // Animation JavaScript - Modified to work with main.js
+  document.addEventListener('DOMContentLoaded', function () {
+
+
+  });
+</script>
+</body>
+</html>

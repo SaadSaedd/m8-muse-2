@@ -4,7 +4,7 @@ Sleep, 10000
 Run, "C:\Users\GA Mini 2\AppData\Local\Programs\Microsoft VS Code\Code.exe" "C:\Users\GA Mini 2\Documents\new\m8-muse-2\"
 Sleep, 7000
 
-Run, "C:\Users\GA Mini 2\AppData\Local\Programs\Microsoft VS Code\Code.exe" "C:\Users\GA Mini 2\Documents\new\m8-muse-2\test7.html"
+Run, "C:\Users\GA Mini 2\AppData\Local\Programs\Microsoft VS Code\Code.exe" "C:\Users\GA Mini 2\Documents\new\m8-muse-2\index.html"
 
 ; Wait for VS Code to start
 Sleep, 7000
