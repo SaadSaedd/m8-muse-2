@@ -13,7 +13,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
   <link rel="stylesheet" href="style2.css">
-  <link rel="stylesheet" href="qui">
   
   <!-- Kiosk-like behaviors -->
   
@@ -73,9 +72,9 @@
   .instructions-popup {
     position: fixed;
     top: 50%;
-    left: -350px;
+    left: -550px;
     transform: translateY(-50%);
-    width: 320px;
+    width: 500px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 20px;
@@ -99,7 +98,7 @@
 
   .instructions-popup p {
     margin: 10px 0;
-    font-size: 14px;
+    font-size: 24px;
     line-height: 1.4;
   }
 
@@ -219,10 +218,10 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js"></script>
   <!-- Our custom JavaScript modules -->
-  <script src="handTracking.js"></script>
-  <script src="wordAnimation.js"></script>
-  <script src="quizLogic.js"></script>
-  <script src="main.js"></script>
+  <script src="handTracking.js" defer></script>
+  <script src="wordAnimation.js" defer></script>
+  <script src="quizLogic.js" defer></script>
+  <script src="main.js" defer></script>
   <script>
     // Animation JavaScript - Modified to work with main.js
     document.addEventListener('DOMContentLoaded', function () {

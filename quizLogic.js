@@ -5,7 +5,7 @@ class QuizManager {
     this.quizData = [
       { 
         question: 'Vind jij dat LGBTQ+ vrouwen zich veilig moeten kunnen voelen om hand in hand over straat te lopen?', 
-        answers: ['Ja, helemaal mee eens', 'Ja, maar niet overal', 'Geen commentaar', 'Nee, helemaal mee oneens'], 
+        answers: ['Ja, helemaal mee eens', 'Ja, maar niet overal', 'Geen commentaar', 'Nee, helemaal  oneens'], 
         responses: {
           0: ['Mooi!', 'Liefde is liefde', 'Veiligheid voor iedereen', 'Respect!', 'Goed standpunt', 'Iedereen verdient liefde'],
           1: ['Begrijpelijk', 'Nuance waardevol', 'Contextafhankelijk', 'Eerlijk antwoord', 'Dank je', 'Respectvol'],
@@ -15,7 +15,7 @@ class QuizManager {
       },
       { 
         question: 'Ben jij van mening dat er meer ontmoetingsplekken moeten komen voor LGBTQ+ vrouwen?', 
-        answers: ['Ja, helemaal mee eens', 'Ja, maar niet overal', 'Geen commentaar', 'Nee, helemaal mee oneens'], 
+        answers: ['Ja, helemaal mee eens', 'Ja, maar niet overal', 'Geen commentaar', 'Nee, helemaal  oneens'], 
         responses: {
           0: ['Super!', 'Gemeenschap is kracht', 'Meer plekken!', 'Verbinding helpt', 'Geweldig idee', 'Mooi gezegd'],
           1: ['Begrijpelijk', 'Selectief is ook goed', 'Interessant', 'Dank je', 'Respectvol', 'Eerlijk'],
@@ -25,7 +25,7 @@ class QuizManager {
       },
       { 
         question: 'Vind jij dat de gemeente moet zorgen voor veilige ruimtes voor LGBTQ+ vrouwen van kleur?', 
-        answers: ['Ja, helemaal mee eens', 'Ja, maar niet overal', 'Geen commentaar', 'Nee, helemaal mee oneens'], 
+        answers: ['Ja, helemaal mee eens', 'Ja, maar niet overal', 'Geen commentaar', 'Nee, helemaal  oneens'], 
         responses: {
           0: ['Krachtig!', 'Inclusie belangrijk', 'Gelijkheid!', 'Geweldig standpunt', 'Diversiteit', 'Mooi gezegd'],
           1: ['Begrijpelijk', 'Selectief kan ook', 'Interessant', 'Eerlijk', 'Dank je', 'Respectvol'],
@@ -35,7 +35,7 @@ class QuizManager {
       },
       { 
         question: 'Vind jij dat er in de toekomst LGBTQ+ voorlichting moet komen op scholen?', 
-        answers: ['Ja, helemaal mee eens', 'Ja, maar niet overal', 'Geen commentaar', 'Nee, helemaal mee oneens'], 
+        answers: ['Ja, helemaal mee eens', 'Ja, maar niet overal', 'Geen commentaar', 'Nee, helemaal  oneens'], 
         responses: {
           0: ['Geweldig!', 'Educatie helpt', 'Begrip kweken', 'Heel belangrijk', 'Goede keuze', 'Vooruitgang'],
           1: ['Begrijpelijk', 'Selectief ook goed', 'Interessant', 'Eerlijk', 'Dank je', 'Respectvol'],
@@ -45,7 +45,7 @@ class QuizManager {
       },
       { 
         question: 'Vind jij dat lesbische stellen kinderen mogen adopteren?', 
-        answers: ['Ja, helemaal mee eens', 'Ja, maar niet overal', 'Geen commentaar', 'Nee, helemaal mee oneens'], 
+        answers: ['Ja, helemaal mee eens', 'Ja, maar niet overal', 'Geen commentaar', 'Nee, helemaal  oneens'], 
         responses: {
           0: ['Liefde telt!', 'Gezin is liefde', 'Warm thuis', 'Mooi standpunt', 'Gelijkheid', 'Prachtig'],
           1: ['Begrijpelijk', 'Nuance waardevol', 'Contextafhankelijk', 'Eerlijk', 'Dank je', 'Respectvol'],

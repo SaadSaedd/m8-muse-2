@@ -339,7 +339,7 @@ class HandTracker {
    
     // Position the cooldown indicator in the same location as confirmation
     const centerX = this.canvas.width / 2;
-    const centerY = this.canvas.height - 280; // Same position as confirmation
+    const centerY = this.canvas.height - 180; // Same position as confirmation
     const radius = 30; // Slightly smaller
    
     // Calculate progress (1 = full circle, 0 = empty)
@@ -380,12 +380,6 @@ class HandTracker {
    
     // Clear canvas for fresh drawing
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-   
-    // Draw the video frame first so we can see the camera
-    this.ctx.save();
-    this.ctx.scale(-1, 1); // Flip horizontally for mirror effect
-    this.ctx.drawImage(this.video, -this.canvas.width, 0, this.canvas.width, this.canvas.height);
-    this.ctx.restore();
    
     if (results.multiHandLandmarks?.length) {
       const lm = results.multiHandLandmarks[0];
