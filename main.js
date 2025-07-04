@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let introCompleted = false;
   let inactivityTimer = null;
   let lastPersonDetected = Date.now();
-  const INACTIVITY_TIMEOUT = 3 * 60 * 1000; // 3 minutes in milliseconds
+  const INACTIVITY_TIMEOUT = 30000000 * 60 * 1000; // 3 minutes in milliseconds
 
   // Initialize modules
   const handTracker = new HandTracker();
