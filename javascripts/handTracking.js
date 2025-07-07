@@ -337,7 +337,7 @@ class HandTracker {
    
     // Position the cooldown indicator in the same location as confirmation
     const centerX = this.canvas.width / 2;
-    const centerY = this.canvas.height - 180; // Same position as confirmation
+    const centerY = this.canvas.height - 280; // Same position as confirmation
     const radius = 30; // Slightly smaller
    
     // Calculate progress (1 = full circle, 0 = empty)
