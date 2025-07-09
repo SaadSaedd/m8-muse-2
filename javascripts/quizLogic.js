@@ -69,7 +69,10 @@ class QuizManager {
     this.onRestartToHomeCallback = null;
 
     // Finger emojis voor gesture mode (aantal vingers)
-    this.fingerEmojis = ['☝️', '✌️', '🤟', '🖐️'];
+    this.fingerEmojis = ['️<img src="images/1.png" class="finger-answer-image" alt="1 vingers"/>️',
+                         '<img src="images/2.png" class="finger-answer-image" alt="2 vingers"/>',
+                         '<img src="images/3.png" class="finger-answer-image" alt="3 vingers"/>',
+                         '<img src="images/4.png" class="finger-answer-image" alt="4 vingers"/>'];
     
     // Updated word categories based on your specifications
     this.wordCategories = {
