@@ -15,9 +15,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Application state
     let introCompleted       = false;
-    let inactivityTimer      = null;
+    let inactivityTimer         = null;
     let lastPersonDetected   = Date.now();
     const INACTIVITY_TIMEOUT = 3 * 60 * 1000; // 3 minutes in milliseconds
+    const DEBUG_MODE         = false; // Set to true for debugging
 
     // Initialize modules
     const handTracker  = new HandTracker();
@@ -25,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const quizManager  = new QuizManager(wordAnimator);
 
     // Set up callbacks between modules
-    console.log( handTracker );
+    if (DEBUG_MODE) console.log(handTracker);
     handTracker.setOnHandDetectedCallback(() => {
         resetInactivityTimer();
     });
@@ -38,8 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
     handTracker.setOnGestureDetectedCallback((gestureIndex, confidence) => {
         gestureDetectedCallback(gestureIndex, confidence);
     });
+
     function gestureDetectedCallback(gestureIndex, confidence) {
-        console.log('==> Gesture detected:', gestureIndex, '; with confidence:', confidence,'; introCompleted:', introCompleted);
+        if (DEBUG_MODE) console.log('==> Gesture detected:', gestureIndex, '; with confidence:', confidence, '; introCompleted:', introCompleted);
 
         // If showing 5 fingers (open hand) during intro, start the quiz
         // Try multiple possible indices for 5 fingers gesture
@@ -48,14 +50,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const possibleFiveFingerIndices = [4, 5, 0]; // Common indices for 5 fingers
 
             if (possibleFiveFingerIndices.includes(gestureIndex)) {
-                console.log(`5 fingers detected (index ${gestureIndex}) during intro - starting quiz!`);
+                if (DEBUG_MODE) console.log(`5 fingers detected (index ${gestureIndex}) during intro - starting quiz!`);
                 startMainApp();
                 return;
             }
 
             // Also allow any high confidence gesture to start (fallback)
             if (confidence > 0.8) {
-                console.log(`High confidence gesture (${gestureIndex}) detected during intro - starting quiz!`);
+                if (DEBUG_MODE) console.log(`High confidence gesture (${gestureIndex}) detected during intro - starting quiz!`);
                 startMainApp();
                 return;
             }
@@ -74,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 resetInactivityTimer();
 
                 // Visual feedback that gesture was recognized
-                console.log(`Gesture ${gestureIndex + 1} triggered answer ${gestureIndex + 1}`);
+                if (DEBUG_MODE) console.log(`Gesture ${gestureIndex + 1} triggered answer ${gestureIndex + 1}`);
             }
         }
     }
@@ -176,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Only set timer if quiz is active (not during intro)
         if (introCompleted) {
             inactivityTimer = setTimeout(() => {
-                console.log('No activity detected for 3 minutes, showing intro again');
+                if (DEBUG_MODE) console.log('No activity detected for 3 minutes, showing intro again');
                 showIntroAgain();
             }, INACTIVITY_TIMEOUT);
         }
@@ -194,7 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Start inactivity timer
         resetInactivityTimer();
     }
-
 
 
     // Instructions popup functionality
@@ -231,17 +232,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // introVideo.addEventListener('ended', startMainApp);
 
 
-
     // Close button functionality
     closeInstructions.addEventListener('click', hideInstructions);
 
     // Function to show animation (called from main.js)
-    window.showAnimation = function() {
-        console.log('Starting animation sequence...');
+    window.showAnimation = function () {
+        if (DEBUG_MODE) console.log('Starting animation sequence...');
 
         // Hide intro container with fade
         introContainer.style.transition = 'opacity 0.3s ease-out';
-        introContainer.style.opacity = '0';
+        introContainer.style.opacity    = '0';
 
         setTimeout(() => {
             introContainer.style.display = 'none';
@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Hide click to start overlay with fade
         clickToStartOverlay.style.transition = 'opacity 0.3s ease-out';
-        clickToStartOverlay.style.opacity = '0';
+        clickToStartOverlay.style.opacity    = '0';
 
         setTimeout(() => {
             clickToStartOverlay.style.display = 'none';
@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Force reload the GIF to restart it
         if (animationGif) {
-            const gifSrc = 'ani.gif';
+            const gifSrc     = 'ani.gif';
             animationGif.src = '';
             setTimeout(() => {
                 // Add timestamp to force browser to reload the GIF
@@ -273,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // After 3 seconds, hide animation with fade out
         setTimeout(() => {
-            console.log('Animation finished, fading out...');
+            if (DEBUG_MODE) console.log('Animation finished, fading out...');
             animationContainer.style.opacity = '0';
 
             setTimeout(() => {

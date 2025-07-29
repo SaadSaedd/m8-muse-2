@@ -514,7 +514,7 @@ restartBtn.appendChild(restartOverlay);
 
 // Click handler for restart button
 restartBtn.addEventListener('click', () => {
-  console.log('Restart button clicked - refreshing page');
+  if (DEBUG_MODE) console.log('Restart button clicked - refreshing page');
   if (this.onUserInteractionCallback) {
     this.onUserInteractionCallback();
   }
