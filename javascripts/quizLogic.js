@@ -519,7 +519,7 @@ class QuizManager {
 
 // Click handler for restart button
             restartBtn.addEventListener('click', () => {
-                if (DEBUG_MODE) console.log('Restart button clicked - refreshing page');
+                // console.log('Restart button clicked - refreshing page');
                 if (this.onUserInteractionCallback) {
                     this.onUserInteractionCallback();
                 }
