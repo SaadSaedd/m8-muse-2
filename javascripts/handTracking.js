@@ -433,7 +433,7 @@ class HandTracker {
       // Initialize MediaPipe Hands with better error handling
       this.hands = new Hands({
         locateFile: (file) => {
-          return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+          return `/node_modules/@mediapipe/hands/${file}`;
         }
       });
      
